@@ -1,24 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
+import PasteArea from "./components/PasteArea";
+import PromptHelper from "./components/PromptHelper";
 
 function App() {
+  const [quizStarted, setQuizStarted] = useState(false);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div
+      style={{
+        maxWidth: "800px",
+        width: "100%",
+        background: "#fff",
+        padding: "2rem",
+        borderRadius: "1rem",
+        boxShadow: "0 0 12px rgba(0,0,0,0.05)",
+        fontFamily:
+          "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
+      }}
+    >
+      <h1 style={{ marginBottom: "1rem" }}>SBA Practice App</h1>
+      <PasteArea setQuizStarted={setQuizStarted} />
+      {!quizStarted && <PromptHelper />}
     </div>
   );
 }
