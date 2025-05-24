@@ -16,47 +16,35 @@ type QuizProps = {
 };
 
 function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, customSec = 30 }: QuizProps) {
-  const [selected, setSelected] = useState<(number | null)[]>(
-    Array(questions.length).fill(null)
-  );
-  const [isCorrect, setIsCorrect] = useState<(boolean | null)[]>(
-    Array(questions.length).fill(null)
-  );
+  const [selected, setSelected] = useState<(number | null)[]>(Array(questions.length).fill(null));
+  const [isCorrect, setIsCorrect] = useState<(boolean | null)[]>(Array(questions.length).fill(null));
   const [showAnswerKey, setShowAnswerKey] = useState(false);
   const [showScore, setShowScore] = useState(false);
   const [timerExpired, setTimerExpired] = useState(false);
 
-  // Calculate time per question
   const getTimePerQuestion = () => {
     switch (timerMode) {
-      case "fast":
-        return 72;
-      case "custom":
-        return customMin * 60 + customSec;
+      case "fast": return 72;
+      case "custom": return customMin * 60 + customSec;
       case "standard":
-      default:
-        return 90;
+      default: return 90;
     }
   };
 
   const [timeLeft, setTimeLeft] = useState(getTimePerQuestion() * questions.length);
-
-  const handleScoreSummary = () => {
-    const results = questions.map((q, i) => {
-      const selectedIndex = selected[i];
-      const correctIndex = q.correctAnswer.charCodeAt(0) - 65;
-      return selectedIndex !== null && selectedIndex === correctIndex;
-    });
-    setIsCorrect(results);
-    setShowScore(true);
-  };
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleScoreSummary();
+          const results = questions.map((q, i) => {
+            const selectedIndex = selected[i];
+            const correctIndex = q.correctAnswer.charCodeAt(0) - 65;
+            return selectedIndex !== null && selectedIndex === correctIndex;
+          });
+          setIsCorrect(results);
+          setShowScore(true);
           setTimerExpired(true);
           return 0;
         }
@@ -64,7 +52,7 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [questions, selected]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -87,39 +75,42 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
     setIsCorrect(updated);
   };
 
-  const handleRevealAll = () => {
-    setShowAnswerKey(true);
+  const handleRevealAll = () => setShowAnswerKey(true);
+
+  const handleScoreSummary = () => {
+    const results = questions.map((q, i) => {
+      const selectedIndex = selected[i];
+      const correctIndex = q.correctAnswer.charCodeAt(0) - 65;
+      return selectedIndex !== null && selectedIndex === correctIndex;
+    });
+    setIsCorrect(results);
+    setShowScore(true);
   };
 
   const totalCorrect = isCorrect.filter((val) => val === true).length;
 
   return (
     <div>
-      <div
-        style={{
-          textAlign: "right",
-          marginBottom: "1rem",
-          fontSize: "1rem",
-          color: timeLeft <= 10 ? "red" : "#333",
-          fontWeight: "bold",
-        }}
-      >
+      <div style={{
+        textAlign: "right",
+        marginBottom: "1rem",
+        fontSize: "1rem",
+        color: timeLeft <= 10 ? "red" : "#333",
+        fontWeight: "bold",
+      }}>
         ⏱️ Time left: {formatTime(timeLeft)}
       </div>
 
       {questions.map((q, qIndex) => {
         const correctIndex = q.correctAnswer.charCodeAt(0) - 65;
-
         return (
           <div key={qIndex} style={{ marginBottom: "2rem" }}>
             <h3>🧪 Question {qIndex + 1} of {questions.length}</h3>
             <p style={{ fontWeight: "bold" }}>{q.question}</p>
-
             <ul style={{ listStyleType: "none", padding: 0, marginBottom: "1rem" }}>
               {q.options.map((option, index) => {
                 const isSelected = selected[qIndex] === index;
                 const isCorrectOption = index === correctIndex;
-
                 return (
                   <li
                     key={index}
@@ -135,8 +126,7 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
                           : "#f0f0f0",
                       borderRadius: "0.75rem",
                       cursor: "pointer",
-                      fontFamily:
-                        "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
+                      fontFamily: "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
                     }}
                   >
                     <strong>{String.fromCharCode(65 + index)}.</strong> {option}
@@ -157,8 +147,7 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
                     border: "none",
                     borderRadius: "0.75rem",
                     cursor: "pointer",
-                    fontFamily:
-                      "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
+                    fontFamily: "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
                   }}
                 >
                   ✅ Submit Answer
@@ -167,28 +156,21 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
 
             {isCorrect[qIndex] !== null && (answerReveal === "perQuestion" || showScore) && (
               <>
-                <p
-                  style={{
-                    marginTop: "1rem",
-                    fontWeight: "bold",
-                    color: isCorrect[qIndex] ? "green" : "red",
-                    fontFamily:
-                      "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
-                  }}
-                >
+                <p style={{
+                  marginTop: "1rem",
+                  fontWeight: "bold",
+                  color: isCorrect[qIndex] ? "green" : "red",
+                  fontFamily: "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
+                }}>
                   {isCorrect[qIndex] ? "✅ Correct!" : "❌ Incorrect!"}
                 </p>
-
-                <p
-                  style={{
-                    marginTop: "0.5rem",
-                    fontStyle: "italic",
-                    color: "#555",
-                    fontFamily:
-                      "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
-                  }}
-                >
-                  {"💡 " + q.explanation}
+                <p style={{
+                  marginTop: "0.5rem",
+                  fontStyle: "italic",
+                  color: "#555",
+                  fontFamily: "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
+                }}>
+                  💡 {q.explanation}
                 </p>
               </>
             )}
@@ -207,8 +189,7 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
             borderRadius: "0.75rem",
             cursor: "pointer",
             fontSize: "1rem",
-            fontFamily:
-              "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
+            fontFamily: "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
             marginRight: "1rem",
           }}
         >
@@ -225,8 +206,7 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
             borderRadius: "0.75rem",
             cursor: "pointer",
             fontSize: "1rem",
-            fontFamily:
-              "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
+            fontFamily: "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
           }}
         >
           📊 {answerReveal === "perQuestion" ? "Show Score Summary" : "Submit Quiz & Show Score"}
@@ -234,31 +214,26 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
       </div>
 
       {showScore && (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "2rem",
-            fontWeight: "bold",
-            fontSize: "1.25rem",
-            color: "#333",
-            fontFamily:
-              "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
-          }}
-        >
+        <div style={{
+          textAlign: "center",
+          marginTop: "2rem",
+          fontWeight: "bold",
+          fontSize: "1.25rem",
+          color: "#333",
+          fontFamily: "'Arial Rounded MT', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif",
+        }}>
           🧮 You scored {totalCorrect} out of {questions.length}!
         </div>
       )}
 
       {timerExpired && (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "1rem",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            color: "red",
-          }}
-        >
+        <div style={{
+          textAlign: "center",
+          marginTop: "1rem",
+          fontSize: "1rem",
+          fontWeight: "bold",
+          color: "red",
+        }}>
           ⌛ Time's up! Quiz auto-submitted.
         </div>
       )}
