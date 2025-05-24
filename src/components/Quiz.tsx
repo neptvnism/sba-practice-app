@@ -30,7 +30,7 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
   const getTimePerQuestion = () => {
     switch (timerMode) {
       case "fast":
-        return 72; // 1.2 minutes = 72 seconds
+        return 72;
       case "custom":
         return customMin * 60 + customSec;
       case "standard":
@@ -40,6 +40,16 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
   };
 
   const [timeLeft, setTimeLeft] = useState(getTimePerQuestion() * questions.length);
+
+  const handleScoreSummary = () => {
+    const results = questions.map((q, i) => {
+      const selectedIndex = selected[i];
+      const correctIndex = q.correctAnswer.charCodeAt(0) - 65;
+      return selectedIndex !== null && selectedIndex === correctIndex;
+    });
+    setIsCorrect(results);
+    setShowScore(true);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -81,16 +91,6 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
     setShowAnswerKey(true);
   };
 
-  const handleScoreSummary = () => {
-    const results = questions.map((q, i) => {
-      const selectedIndex = selected[i];
-      const correctIndex = q.correctAnswer.charCodeAt(0) - 65;
-      return selectedIndex !== null && selectedIndex === correctIndex;
-    });
-    setIsCorrect(results);
-    setShowScore(true);
-  };
-
   const totalCorrect = isCorrect.filter((val) => val === true).length;
 
   return (
@@ -112,9 +112,7 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
 
         return (
           <div key={qIndex} style={{ marginBottom: "2rem" }}>
-            <h3>
-              🧪 Question {qIndex + 1} of {questions.length}
-            </h3>
+            <h3>🧪 Question {qIndex + 1} of {questions.length}</h3>
             <p style={{ fontWeight: "bold" }}>{q.question}</p>
 
             <ul style={{ listStyleType: "none", padding: 0, marginBottom: "1rem" }}>
@@ -198,7 +196,6 @@ function Quiz({ questions, answerReveal, timerMode = "standard", customMin = 1, 
         );
       })}
 
-      {/* Answer Key + Score Buttons */}
       <div style={{ textAlign: "center", marginTop: "2rem" }}>
         <button
           onClick={handleRevealAll}
